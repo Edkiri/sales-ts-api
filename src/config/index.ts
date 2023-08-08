@@ -1,7 +1,8 @@
-import { config } from 'dotenv';
+import dotenv from 'dotenv';
 import Joi from 'joi';
+import { Config } from 'src/interfaces/config.interface';
 
-config();
+dotenv.config();
 
 const envVarsSchema = Joi.object({
   PORT: Joi.number().default(3000),
@@ -10,8 +11,9 @@ const envVarsSchema = Joi.object({
   SECRET_KEY: Joi.string().required(),
 });
 
-const { error } = envVarsSchema.validate({
+const { value, error } = envVarsSchema.validate({
   PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
   SECRET_KEY: process.env.SECRET_KEY,
 });
@@ -20,4 +22,11 @@ if (error) {
   throw new Error(`Error validating environment variables: ${error.message}`);
 }
 
-export const { NODE_ENV, PORT, SECRET_KEY, DATABASE_URL } = process.env;
+const config = {
+  port: value.PORT,
+  env: value.NODE_ENV,
+  databaseUrl: value.DATABASE_URL,
+  secretKey: value.SECRET_KEY,
+} as Config;
+
+export { config };

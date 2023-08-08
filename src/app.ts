@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import { NODE_ENV, PORT } from './config';
+import { config } from './config';
 import { Routes } from './interfaces/routes.interface';
 import { ErrorMiddleware, NotFound } from './middlewares';
 
@@ -15,8 +15,8 @@ export class App {
 
   constructor(routes: Routes[]) {
     this.app = express();
-    this.env = NODE_ENV || 'development';
-    this.port = PORT || 3000;
+    this.env = config.env || 'development';
+    this.port = config.port || 3000;
 
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
