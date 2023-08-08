@@ -2,27 +2,54 @@ import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
-import * as middlewares from './middlewares';
-import MessageResponse from './interfaces/MessageResponse';
+import { NODE_ENV, PORT } from './config';
+import { Routes } from './interfaces/Routes';
+import { errorHandler, notFound } from './middlewares';
 
-dotenv.config();
+export class App {
+  public app: express.Application;
+  public env: string;
+  public port: string | number;
 
-const app = express();
+  constructor(routes: Routes[]) {
+    this.app = express();
+    this.env = NODE_ENV || 'development';
+    this.port = PORT || 3000;
 
-app.use(morgan('dev'));
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+    this.initializeMiddlewares();
+    this.initializeRoutes(routes);
+    this.initializeErrorHandling();
+  }
 
-app.get<{}, MessageResponse>('/', (req, res) => {
-  res.json({
-    message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄',
-  });
-});
+  public listen() {
+    this.app.listen(this.port, () => {
+      console.log(`=================================`);
+      console.log(`======= ENV: ${this.env} =======`);
+      console.log(`🚀 App listening on the port ${this.port}`);
+      console.log(`=================================`);
+    });
+  }
 
-app.use(middlewares.notFound);
-app.use(middlewares.errorHandler);
+  public getServer() {
+    return this.app;
+  }
 
-export default app;
+  private initializeMiddlewares() {
+    this.app.use(morgan('dev'));
+    this.app.use(cors());
+    this.app.use(helmet());
+    this.app.use(express.json());
+  }
+
+  private initializeRoutes(routes: Routes[]) {
+    routes.forEach((route) => {
+      this.app.use('/', route.router);
+    });
+  }
+
+  private initializeErrorHandling() {
+    this.app.use(notFound);
+    this.app.use(errorHandler);
+  }
+}

@@ -14,6 +14,7 @@ module.exports = {
     camelcase: 0,
     'import/extensions': 0,
     '@typescript-eslint/no-redeclare': 0,
+    "@typescript-eslint/lines-between-class-members": 0
   },
   settings: {
     'import/parsers': {
