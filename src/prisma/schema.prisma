@@ -12,3 +12,47 @@ model User {
   email    String @unique
   password String
 }
+
+model Client {
+  id           Int    @id @default(autoincrement())
+  identityCard String @unique
+  phoneNumber  String
+  email        String
+  Sale         Sale[]
+}
+
+enum SaleStatus {
+  UNPAID
+  REFUNDING
+  FINISHED
+}
+
+model Sale {
+  id          Int        @id @default(autoincrement())
+  description String?
+  status      SaleStatus @default(UNPAID)
+  client      Client?    @relation(fields: [clientId], references: [id])
+  clientId    Int?
+  // Order       Order[]
+}
+
+model Product {
+  id        Int     @id @default(autoincrement())
+  brand     String
+  reference String
+  code      String  @unique
+  name      String  @unique
+  price     Float
+  stock     Float
+  Order     Order[]
+}
+
+model Order {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id])
+  // sale      Sale    @relation(fields: [saleId], references: [id])
+  quantity  Float
+  price     Float
+  productId Int
+  // saleId    Int
+}
