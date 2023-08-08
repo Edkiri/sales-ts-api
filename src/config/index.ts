@@ -10,8 +10,7 @@ const envVarsSchema = Joi.object({
   SECRET_KEY: Joi.string().required(),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { value, error } = envVarsSchema.validate({
+const { error } = envVarsSchema.validate({
   PORT: process.env.PORT,
   DATABASE_URL: process.env.DATABASE_URL,
   SECRET_KEY: process.env.SECRET_KEY,

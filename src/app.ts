@@ -1,11 +1,12 @@
+import 'reflect-metadata';
 import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
 import { NODE_ENV, PORT } from './config';
-import { Routes } from './interfaces/Routes';
-import { errorHandler, notFound } from './middlewares';
+import { Routes } from './interfaces/routes.interface';
+import { ErrorMiddleware, NotFound } from './middlewares';
 
 export class App {
   public app: express.Application;
@@ -49,7 +50,7 @@ export class App {
   }
 
   private initializeErrorHandling() {
-    this.app.use(notFound);
-    this.app.use(errorHandler);
+    this.app.use(NotFound);
+    this.app.use(ErrorMiddleware);
   }
 }
