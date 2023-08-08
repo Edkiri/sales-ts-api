@@ -3,6 +3,7 @@ import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 import { config } from './config';
 import { Routes } from './interfaces/routes.interface';
@@ -38,9 +39,11 @@ export class App {
 
   private initializeMiddlewares() {
     this.app.use(morgan('dev'));
-    this.app.use(cors());
+    this.app.use(cors({ origin: '*', credentials: true }));
     this.app.use(helmet());
     this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cookieParser());
   }
 
   private initializeRoutes(routes: Routes[]) {
