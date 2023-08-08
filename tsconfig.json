@@ -12,7 +12,7 @@
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "baseUrl": "src",
+    "baseUrl": "./",
     "paths": {},
   },
   "include": ["./*.js", "src/**/*.ts"],
