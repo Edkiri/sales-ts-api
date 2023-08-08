@@ -2,12 +2,13 @@ import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
 import { User, UserWithoutPassword } from '../interfaces/users.interface';
 import { UserService } from './users.service';
+import { RequestWithUser } from '../interfaces/auth.interface';
 
 export class UserController {
   public user = Container.get(UserService);
 
   public getUsers = async (
-    req: Request,
+    req: RequestWithUser,
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
