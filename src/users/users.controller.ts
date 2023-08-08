@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-import { User } from '../interfaces/users.interface';
+import { User, UserWithoutPassword } from '../interfaces/users.interface';
 import { UserService } from './users.service';
 
 export class UserController {
@@ -12,7 +12,7 @@ export class UserController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const findAllUsersData: User[] = await this.user.findAllUser();
+      const findAllUsersData = await this.user.findAllUser();
 
       res.status(200).json({ data: findAllUsersData, message: 'findAll' });
     } catch (error) {
@@ -27,7 +27,9 @@ export class UserController {
   ): Promise<void> => {
     try {
       const userData: User = req.body;
-      const createUserData: User = await this.user.createUser(userData);
+      const createUserData: UserWithoutPassword = await this.user.createUser(
+        userData,
+      );
 
       res.status(201).json({ data: createUserData, message: 'created' });
     } catch (error) {

@@ -4,7 +4,7 @@ module.exports = {
   parserOptions: {
     project: ['./tsconfig.json'],
   },
-  extends: ['airbnb-typescript/base', 'plugin:prettier/recommended'],
+  extends: ['plugin:prettier/recommended'],
   plugins: ['import', '@typescript-eslint'],
   rules: {
     'comma-dangle': 0,
