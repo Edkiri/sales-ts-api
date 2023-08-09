@@ -1,5 +1,4 @@
 import {
-  IsEmail,
   IsString,
   IsNotEmpty,
   IsOptional,
@@ -12,13 +11,13 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  public brand?: string;
+  brand?: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  public reference?: string;
+  reference?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -29,6 +28,40 @@ export class CreateProductDto {
   @IsNotEmpty()
   @MaxLength(100)
   name!: string;
+
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @IsOptional()
+  @IsNumber()
+  stock?: number;
+}
+
+export class UpdateProductDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  brand?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  reference?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  code?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name?: string;
 
   @IsOptional()
   @IsNumber()

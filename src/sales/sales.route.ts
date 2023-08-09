@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Routes } from '../interfaces/routes.interface';
 import { ValidationMiddleware } from '../middlewares';
-import { CreateSaleDto } from './sales.dto';
+import { CreateSaleDto } from './dtos/sales.dto';
 import { SaleController } from './sales.controller';
 
 export class SaleRouter implements Routes {

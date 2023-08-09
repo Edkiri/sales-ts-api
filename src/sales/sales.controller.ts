@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-import { SaleService } from './sales.service';
+import { SaleService } from './services/sales.service';
 
 export class SaleController {
   public sale = Container.get(SaleService);
