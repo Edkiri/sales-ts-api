@@ -36,30 +36,9 @@ export class SaleService {
     } catch (error) {
       throw error;
     } finally {
-      await this.prisma.$disconnect(); // Disconnect the Prisma client
+      await this.prisma.$disconnect();
     }
 
     return createdSale;
-
-    // const createdSale = await this.sale.create({
-    //   data: { ...saleData, orders: { createMany: { data: orders } } },
-    // });
-
-    // const updateProducts = orders.map((order) => {
-    //   return this.product.update({
-    //     data: {
-    //       stock: {
-    //         decrement: order.quantity,
-    //       },
-    //     },
-    //     where: {
-    //       id: order.productId,
-    //     },
-    //   });
-    // });
-
-    // await new PrismaClient().$transaction([createdSale, ...updateProducts]);
-
-    // return createdSale;
   }
 }
