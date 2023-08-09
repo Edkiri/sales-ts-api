@@ -14,11 +14,12 @@ model User {
 }
 
 model Client {
-  id           Int    @id @default(autoincrement())
-  identityCard String @unique
+  id           Int     @id @default(autoincrement())
+  identityCard String? @unique
   phoneNumber  String
-  email        String
-  Sale         Sale[]
+  name         String
+  email        String?
+  // sales        Sale[]
 }
 
 enum SaleStatus {
@@ -27,14 +28,15 @@ enum SaleStatus {
   FINISHED
 }
 
-model Sale {
-  id          Int        @id @default(autoincrement())
-  description String?
-  status      SaleStatus @default(UNPAID)
-  client      Client?    @relation(fields: [clientId], references: [id])
-  clientId    Int?
-  // Order       Order[]
-}
+// model Sale {
+//   id          Int        @id @default(autoincrement())
+//   status      SaleStatus @default(UNPAID)
+//   description String?
+
+//   client   Client? @relation(fields: [clientId], references: [id])
+//   clientId Int?
+//   // Order       Order[]
+// }
 
 model Product {
   id        Int     @id @default(autoincrement())

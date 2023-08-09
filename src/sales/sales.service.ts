@@ -7,8 +7,6 @@ export class SaleService {
   public sale = new PrismaClient().sale;
 
   public async createSale(saleData: CreateSaleDto): Promise<Sale | null> {
-    console.log(saleData);
-
     const createUserData = await this.sale.create({
       data: saleData,
     });

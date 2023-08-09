@@ -29,7 +29,6 @@ export const ValidationMiddleware = (
         next();
       })
       .catch((errors: ValidationError[]) => {
-        console.log(errors);
         const message = errors
           .map((error: ValidationError) =>
             Object.values(error.constraints ?? ''),
