@@ -6,11 +6,12 @@ import { Routes } from '../interfaces/routes.interface';
 import { AuthMiddleware } from '../middlewares/auth.middleware';
 
 export class UserRoute implements Routes {
-  public path = '/users';
+  public path: string;
   public router = Router();
   public user = new UserController();
 
-  constructor() {
+  constructor(path: string) {
+    this.path = path;
     this.initializeRoutes();
   }
 

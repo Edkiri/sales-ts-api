@@ -5,11 +5,12 @@ import { ClientController } from './clients.controller';
 import { CreateClientDto } from './clients.dto';
 
 export class ClientRouter implements Routes {
-  public path = '/clients';
+  public path: string;
   public router = Router();
   public controller = new ClientController();
 
-  constructor() {
+  constructor(path: string) {
+    this.path = path;
     this.initializeRoutes();
   }
 

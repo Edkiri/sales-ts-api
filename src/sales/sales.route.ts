@@ -5,11 +5,12 @@ import { CreateSaleDto } from './sales.dto';
 import { SaleController } from './sales.controller';
 
 export class SaleRouter implements Routes {
-  public path = '/sales';
+  public path: string;
   public router = Router();
   public controller = new SaleController();
 
-  constructor() {
+  constructor(path: string) {
+    this.path = path;
     this.initializeRoutes();
   }
 

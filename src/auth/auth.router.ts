@@ -5,11 +5,13 @@ import { CreateUserDto } from '../users/users.dto';
 import { ValidationMiddleware } from '../middlewares';
 
 export class AuthRoute implements Routes {
-  public path = '/auth';
+  public path: string;
   public router = Router();
   public auth = new AuthController();
 
-  constructor() {
+  constructor(path: string) {
+    this.path = path;
+
     this.initializeRoutes();
   }
 
@@ -22,7 +24,7 @@ export class AuthRoute implements Routes {
     );
 
     /**
-     * Login - Upon successful login, a cookie will be set in the response
+     * Login - Upon successful login, a cookie will be set to response
      */
     this.router.post(
       `${this.path}/login`,
