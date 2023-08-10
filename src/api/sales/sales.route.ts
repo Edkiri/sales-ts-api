@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { Routes } from '../interfaces/routes.interface';
-import { ValidationMiddleware } from '../middlewares';
+import { Routes } from '../../interfaces/routes.interface';
+import { ValidationMiddleware } from '../../middlewares';
 import { CreateSaleDto } from './dtos/sales.dto';
 import { SaleController } from './sales.controller';
 

@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-import { User, UserWithoutPassword } from '../interfaces/users.interface';
+import { IUserResponse } from '../../interfaces/users.interface';
 import { UserService } from './users.service';
-import { RequestWithUser } from '../interfaces/auth.interface';
+import { RequestWithUser } from '../../interfaces/auth.interface';
+import { CreateUserDto } from './users.dto';
 
 export class UserController {
   public user = Container.get(UserService);
@@ -27,8 +28,8 @@ export class UserController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const userData: User = req.body;
-      const createUserData: UserWithoutPassword = await this.user.createUser(
+      const userData: CreateUserDto = req.body;
+      const createUserData: IUserResponse = await this.user.createUser(
         userData,
       );
 

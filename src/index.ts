@@ -1,9 +1,9 @@
+import { AuthRoute } from './api/auth/auth.router';
+import { ClientRouter } from './api/clients/clients.router';
+import { ProductRouter } from './api/products/products.router';
+import { SaleRouter } from './api/sales/sales.route';
+import { UserRoute } from './api/users/users.route';
 import { App } from './app';
-import { UserRoute } from './users/users.route';
-import { AuthRoute } from './auth/auth.router';
-import { SaleRouter } from './sales/sales.route';
-import { ClientRouter } from './clients/clients.router';
-import { ProductRouter } from './products/products.router';
 
 const API_PATH = '/api/v1';
 

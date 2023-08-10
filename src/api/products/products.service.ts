@@ -1,7 +1,7 @@
 import { PrismaClient, Product } from '@prisma/client';
 import { Service } from 'typedi';
 import { CreateProductDto, UpdateProductDto } from './products.dto';
-import { HttpException } from '../exceptions/httpException';
+import { HttpException } from '../../exceptions/httpException';
 
 @Service()
 export class ProductService {

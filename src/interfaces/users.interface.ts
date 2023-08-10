@@ -1,10 +1,12 @@
+import { UserRole } from '@prisma/client';
+
 export interface User {
   id?: number;
   email: string;
   password: string;
 }
 
-export interface UserWithoutPassword {
+export interface IUserResponse {
   id: number;
-  email: string;
+  role: UserRole;
 }

@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { Routes } from '../interfaces/routes.interface';
 import { AuthController } from './auth.controller';
 import { CreateUserDto } from '../users/users.dto';
-import { ValidationMiddleware } from '../middlewares';
+import { ValidationMiddleware } from '../../middlewares';
+import { Routes } from '../../interfaces/routes.interface';
 
 export class AuthRoute implements Routes {
   public path: string;

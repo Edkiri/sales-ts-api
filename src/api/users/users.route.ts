@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { UserController } from './users.controller';
 import { CreateUserDto } from './users.dto';
-import { ValidationMiddleware } from '../middlewares/validation.middleware';
-import { Routes } from '../interfaces/routes.interface';
-import { AuthMiddleware } from '../middlewares/auth.middleware';
+import { ValidationMiddleware } from '../../middlewares/validation.middleware';
+import { Routes } from '../../interfaces/routes.interface';
+import { AuthMiddleware } from '../../middlewares/auth.middleware';
 
 export class UserRoute implements Routes {
   public path: string;

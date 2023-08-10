@@ -1,27 +1,25 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { Service } from 'typedi';
-import { UserWithoutPassword } from '../interfaces/users.interface';
 import { CreateUserDto } from './users.dto';
-import { HttpException } from '../exceptions/httpException';
+import { IUserResponse } from '../../interfaces/users.interface';
+import { HttpException } from '../../exceptions/httpException';
 
 @Service()
 export class UserService {
   public user = new PrismaClient().user;
 
-  public async findAllUser(): Promise<UserWithoutPassword[]> {
+  public async findAllUser(): Promise<IUserResponse[]> {
     const allUser = await this.user.findMany({
       select: {
         id: true,
-        email: true,
+        role: true,
       },
     });
-    return allUser as UserWithoutPassword[];
+    return allUser as IUserResponse[];
   }
 
-  public async createUser(
-    userData: CreateUserDto,
-  ): Promise<UserWithoutPassword> {
+  public async createUser(userData: CreateUserDto): Promise<IUserResponse> {
     const findUser = await this.user.findUnique({
       where: { email: userData.email },
     });
@@ -32,9 +30,13 @@ export class UserService {
       );
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: UserWithoutPassword = await this.user.create({
-      data: { ...userData, password: hashedPassword },
-      select: { id: true, email: true },
+    const createUserData: IUserResponse = await this.user.create({
+      data: {
+        email: userData.email,
+        password: hashedPassword,
+        role: UserRole.WORKER,
+      },
+      select: { id: true, role: true },
     });
     return createUserData;
   }

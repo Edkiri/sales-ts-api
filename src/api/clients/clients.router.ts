@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { Routes } from '../interfaces/routes.interface';
-import { ValidationMiddleware } from '../middlewares';
+import { Routes } from '../../interfaces/routes.interface';
+import { ValidationMiddleware } from '../../middlewares';
 import { ClientController } from './clients.controller';
 import { CreateClientDto } from './clients.dto';
 
