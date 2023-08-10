@@ -11,10 +11,10 @@ export class SaleController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const userData = req.body;
-      const createUserData = await this.sale.createSale(userData);
+      const saleData = req.body;
+      const createSaleData = await this.sale.createSale(saleData);
 
-      res.status(201).json({ data: createUserData, message: 'created' });
+      res.status(201).json({ data: createSaleData, message: 'created' });
     } catch (error) {
       next(error);
     }

@@ -39,23 +39,20 @@ CREATE TABLE "Product" (
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "price" DOUBLE PRECISION,
-<<<<<<<< HEAD:src/prisma/migrations/20230809144425_init/migration.sql
     "stock" DOUBLE PRECISION NOT NULL DEFAULT 0,
-========
-    "stock" DOUBLE PRECISION,
->>>>>>>> a1c85ff280cec6b9967fa5d218254137f98f1feb:src/prisma/migrations/20230809114118_init/migration.sql
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Order" (
+    "id" SERIAL NOT NULL,
     "quantity" DOUBLE PRECISION NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "productId" INTEGER NOT NULL,
     "saleId" INTEGER NOT NULL,
 
-    CONSTRAINT "Order_pkey" PRIMARY KEY ("productId","saleId")
+    CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

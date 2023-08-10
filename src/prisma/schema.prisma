@@ -50,6 +50,7 @@ model Product {
 }
 
 model Order {
+  id       Int   @id @default(autoincrement())
   quantity Float
   price    Float
 
@@ -57,6 +58,4 @@ model Order {
   productId Int
   sale      Sale    @relation(fields: [saleId], references: [id])
   saleId    Int
-
-  @@id([productId, saleId])
 }
