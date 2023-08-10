@@ -15,8 +15,8 @@ model User {
 }
 
 enum UserRole {
-  ADMIN
   WORKER
+  ADMIN
 }
 
 model Client {
