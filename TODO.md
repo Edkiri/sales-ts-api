@@ -1,7 +1,8 @@
 #### Jueves, 10 de agosto
 * [x] change order model for client able to create orders of the same product
-* [] cant create order witout stock
-* [] search for custom prisma error handlres
+* [x] cant create order witout stock
+* [] search for prisma error handlres
+* [] search for custom response interfaces
 
 #### Miércoles, 09 de agosto
 * [x] create a client
