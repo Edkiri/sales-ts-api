@@ -26,7 +26,7 @@ export class SaleService {
           if (totalStock < 0)
             throw new HttpException(
               409,
-              `There are not enough ${product.name} in inventory to complete the sale, there are ${product.stock} registered in inventory`,
+              `There are not enough '${product.name}' in inventory to complete the sale, there are '${product.stock}' registered in inventory`,
             );
           return transactionalPrisma.product.update({
             data: {

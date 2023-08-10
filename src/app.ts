@@ -7,7 +7,11 @@ import cookieParser from 'cookie-parser';
 
 import { config } from './config';
 import { Routes } from './interfaces/routes.interface';
-import { ErrorMiddleware, NotFound } from './middlewares';
+import {
+  ErrorMiddleware,
+  NotFound,
+  PrismaErrorMiddleware,
+} from './middlewares';
 
 export class App {
   public app: express.Application;
@@ -53,6 +57,7 @@ export class App {
   }
 
   private initializeErrorHandling() {
+    this.app.use(PrismaErrorMiddleware);
     this.app.use(NotFound);
     this.app.use(ErrorMiddleware);
   }
