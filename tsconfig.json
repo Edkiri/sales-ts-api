@@ -1,20 +1,43 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ESNext",
     "outDir": "dist",
     "sourceMap": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": true,
-    "strict": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "emitDecoratorMetadata": true,
+
+    /* Basic Options */
+    "incremental": true,
+    "module": "commonjs",
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "esModuleInterop": true,
+
+    /* Experimental Options */
     "experimentalDecorators": true,
-    "baseUrl": "./",
-    "paths": {},
+    "emitDecoratorMetadata": true,
+
+    /* Advanced Options */
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["./*.js", "src/**/*.ts"],
   "exclude": ["node_modules"]

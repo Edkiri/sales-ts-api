@@ -3,7 +3,9 @@ import { AuthController } from './auth.controller';
 import { CreateUserDto } from '../users/users.dto';
 import { ValidationMiddleware } from '../../middlewares';
 import { Routes } from '../../interfaces/routes.interface';
+import { Route } from 'tsoa';
 
+@Route('auth')
 export class AuthRoute implements Routes {
   public path: string;
   public router = Router();

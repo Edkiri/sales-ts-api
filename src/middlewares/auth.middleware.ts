@@ -20,7 +20,7 @@ const getAuthorization = (req: Request) => {
 
 export const AuthMiddleware = async (
   req: RequestWithUser,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   try {

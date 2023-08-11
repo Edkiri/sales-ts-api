@@ -1,4 +1,4 @@
-import { Client, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { Service } from 'typedi';
 import { CreateClientDto } from './clients.dto';
 
@@ -6,9 +6,7 @@ import { CreateClientDto } from './clients.dto';
 export class ClientService {
   public client = new PrismaClient().client;
 
-  public async createClient(
-    clientData: CreateClientDto,
-  ): Promise<Client | null> {
+  public async createClient(clientData: CreateClientDto) {
     const createdClientData = await this.client.create({
       data: clientData,
     });

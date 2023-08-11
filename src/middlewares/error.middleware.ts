@@ -5,7 +5,7 @@ import { IErrorResponse } from '../interfaces/error-response';
 
 export const ErrorMiddleware = (
   error: HttpException,
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -14,6 +14,8 @@ export const ErrorMiddleware = (
     const message: string = error.message || 'Something went wrong';
 
     const errResponse: IErrorResponse = { status, message };
+
+    if (error.details) errResponse.details = error.details;
 
     if (config.env === 'development') errResponse.stack = error.stack;
 

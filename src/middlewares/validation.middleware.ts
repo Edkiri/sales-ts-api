@@ -17,7 +17,7 @@ export const ValidationMiddleware = (
   whitelist = true,
   forbidNonWhitelisted = false,
 ) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const dto = plainToInstance(type, req.body);
     validateOrReject(dto, {
       skipMissingProperties,

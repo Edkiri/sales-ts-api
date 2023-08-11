@@ -13,8 +13,8 @@ import { HttpException } from '../exceptions/httpException';
 
 export const PrismaErrorMiddleware = (
   err: any,
-  req: Request,
-  res: Response,
+  _req: Request,
+  _res: Response,
   next: NextFunction,
 ) => {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {

@@ -1,16 +1,18 @@
 import 'reflect-metadata';
-import express from 'express';
+import express, { Response, Request } from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import { RegisterRoutes } from '../dist/routes';
 
 import { config } from './config';
-import { Routes } from './interfaces/routes.interface';
 import {
   ErrorMiddleware,
   NotFound,
   PrismaErrorMiddleware,
+  tsoaErrorMiddleware,
 } from './middlewares';
 
 export class App {
@@ -18,13 +20,13 @@ export class App {
   public env: string;
   public port: string | number;
 
-  constructor(routes: Routes[]) {
+  constructor() {
     this.app = express();
     this.env = config.env || 'development';
     this.port = config.port || 3000;
 
     this.initializeMiddlewares();
-    this.initializeRoutes(routes);
+    this.initializeRoutes();
     this.initializeErrorHandling();
   }
 
@@ -50,13 +52,22 @@ export class App {
     this.app.use(cookieParser());
   }
 
-  private initializeRoutes(routes: Routes[]) {
-    routes.forEach((route) => {
-      this.app.use('/', route.router);
-    });
+  private initializeRoutes() {
+    RegisterRoutes(this.app);
+    this.app.use(
+      '/docs',
+      swaggerUi.serve,
+      async (_req: Request, res: Response) => {
+        console.log('ASD');
+        return res.send(
+          swaggerUi.generateHTML(await import('../dist/swagger.json')),
+        );
+      },
+    );
   }
 
   private initializeErrorHandling() {
+    this.app.use(tsoaErrorMiddleware);
     this.app.use(PrismaErrorMiddleware);
     this.app.use(NotFound);
     this.app.use(ErrorMiddleware);

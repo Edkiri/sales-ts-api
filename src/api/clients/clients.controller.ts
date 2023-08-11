@@ -1,23 +1,15 @@
-import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
 import { ClientService } from './clients.service';
 import { CreateClientDto } from './clients.dto';
+import { Body, Controller, Post, Route } from 'tsoa';
 
-export class ClientController {
+@Route('/api/v1/clients')
+export class ClientController extends Controller {
   public client = Container.get(ClientService);
 
-  public createClient = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const clientData: CreateClientDto = req.body;
-      const createClientData = await this.client.createClient(clientData);
-
-      res.status(201).json({ data: createClientData, message: 'created' });
-    } catch (error) {
-      next(error);
-    }
-  };
+  @Post()
+  public async createClient(@Body() requestBody: CreateClientDto) {
+    const createClientData = await this.client.createClient(requestBody);
+    return createClientData;
+  }
 }
