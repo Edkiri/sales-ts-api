@@ -2,7 +2,7 @@ import { PrismaClient, UserRole } from '@prisma/client';
 import { compare, hash } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { Service } from 'typedi';
-import { CreateUserDto } from '../users/users.dto';
+import { CreateUserDto } from './dto';
 import { User, IUserResponse } from '../../interfaces/users.interface';
 import { HttpException } from '../../exceptions/httpException';
 import { DataStoredInToken, TokenData } from '../../interfaces/auth.interface';
