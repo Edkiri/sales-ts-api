@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Service } from 'typedi';
-import { CreateClientDto } from './clients.dto';
+import { CreateClientDto } from './dto';
 
 @Service()
 export class ClientService {
