@@ -51,7 +51,7 @@ export class ClientController extends Controller {
     return clients;
   }
 
-  @Delete('/:clientId')
+  @Delete('/{clientId}')
   @SuccessResponse(204, 'client deleted')
   public async deleteClient(@Path('clientId') clientId: number) {
     await this.client.deleteClientById(clientId);

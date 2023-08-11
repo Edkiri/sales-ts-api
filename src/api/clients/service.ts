@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Service } from 'typedi';
 import { CreateClientDto, UpdateClientDto } from './dto';
+import { HttpException } from '../../exceptions/httpException';
 
 @Service()
 export class ClientService {
@@ -21,10 +22,14 @@ export class ClientService {
 
   public async findClientById(clientId: number) {
     const client = await this.client.findUnique({ where: { id: clientId } });
+    if (!client) {
+      throw new HttpException(404, `Not found client with id ${clientId}`);
+    }
     return client;
   }
 
   public async updateClient(clientId: number, data: UpdateClientDto) {
+    await this.findClientById(clientId);
     const updatedClient = await this.client.update({
       where: { id: clientId },
       data,
@@ -33,6 +38,7 @@ export class ClientService {
   }
 
   public async deleteClientById(clientId: number) {
+    await this.findClientById(clientId);
     await this.client.delete({ where: { id: clientId } });
     return;
   }
