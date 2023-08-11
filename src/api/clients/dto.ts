@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreateClientDto {
@@ -15,6 +16,7 @@ export class CreateClientDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
+  @MinLength(2)
   public name!: string;
 
   @IsOptional()
@@ -27,4 +29,30 @@ export class CreateClientDto {
   @IsNotEmpty()
   @MaxLength(100)
   phoneNumber!: string;
+}
+
+export class UpdateClientDto {
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(100)
+  public email?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  @MinLength(2)
+  public name?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  identityCard?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  phoneNumber?: string;
 }
