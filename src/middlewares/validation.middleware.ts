@@ -29,12 +29,24 @@ export const ValidationMiddleware = (
         next();
       })
       .catch((errors: ValidationError[]) => {
-        const message = errors
-          .map((error: ValidationError) =>
-            Object.values(error.constraints ?? ''),
-          )
-          .join(', ');
-        next(new HttpException(400, message));
+        const errorMessages: string[] = [];
+
+        // Helper function to extract error messages recursively
+        const extractErrorMessages = (error: ValidationError) => {
+          const children = error.children ?? [];
+          errorMessages.push(...Object.values(error.constraints ?? ''));
+
+          children.forEach((child: ValidationError) => {
+            extractErrorMessages(child);
+          });
+        };
+
+        errors.forEach((error: ValidationError) => {
+          extractErrorMessages(error);
+        });
+
+        const errorMessage = errorMessages.join(', ');
+        next(new HttpException(400, errorMessage));
       });
   };
 };

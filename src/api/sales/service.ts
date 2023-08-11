@@ -1,7 +1,7 @@
 import { PrismaClient, Sale } from '@prisma/client';
 import { Service } from 'typedi';
-import { CreateSaleDto } from '../dtos/sales.dto';
-import { HttpException } from '../../../exceptions/httpException';
+import { CreateSaleDto } from './dtos/sales.dto';
+import { HttpException } from '../../exceptions/httpException';
 
 @Service()
 export class SaleService {
@@ -22,32 +22,34 @@ export class SaleService {
           const product = await transactionalPrisma.product.findUniqueOrThrow({
             where: { id: order.productId },
           });
+
+          // Check if there are are enough items in inventory
           const totalStock = product.stock - order.quantity;
           if (totalStock < 0)
             throw new HttpException(
               409,
               `There are not enough '${product.name}' in inventory to complete the sale, there are '${product.stock}' registered in inventory`,
             );
-          return transactionalPrisma.product.update({
+
+          const updatedProduct = transactionalPrisma.product.update({
+            where: {
+              id: order.productId,
+            },
             data: {
               stock: {
                 decrement: order.quantity,
               },
             },
-            where: {
-              id: order.productId,
-            },
           });
+          return updatedProduct;
         });
-
         await Promise.all(updateProducts);
       });
+      return createdSale;
     } catch (error) {
       throw error;
     } finally {
       await this.prisma.$disconnect();
     }
-
-    return createdSale;
   }
 }
