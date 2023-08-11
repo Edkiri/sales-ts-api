@@ -52,4 +52,26 @@ export class SaleService {
       await this.prisma.$disconnect();
     }
   }
+
+  public async findSales() {
+    const sales = await this.prisma.sale.findMany({
+      include: {
+        orders: {
+          select: {
+            product: {
+              select: {
+                brand: true,
+                code: true,
+                name: true,
+                reference: true,
+                id: true,
+              },
+            },
+          },
+        },
+        client: true,
+      },
+    });
+    return sales;
+  }
 }
