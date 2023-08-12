@@ -58,7 +58,6 @@ export class App {
       '/docs',
       swaggerUi.serve,
       async (_req: Request, res: Response) => {
-        console.log('ASD');
         return res.send(
           swaggerUi.generateHTML(await import('../dist/swagger.json')),
         );

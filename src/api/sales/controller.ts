@@ -10,6 +10,7 @@ import {
   Patch,
   Path,
   Post,
+  Response,
   Route,
   SuccessResponse,
   Tags,
@@ -23,6 +24,10 @@ export class SaleController extends Controller {
 
   @Post()
   @SuccessResponse('201', 'Created')
+  @Response(
+    409,
+    'There is not enough {product_name} in inventory to complete the sale; there are {stock} registered in inventory.',
+  )
   @Middlewares(ValidationMiddleware(CreateSaleDto))
   public async createSale(@Body() body: CreateSaleDto) {
     const createdSaleData = await this.sale.createSale(body);
