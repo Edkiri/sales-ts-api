@@ -20,10 +20,12 @@ export class CreateOrderDto {
 }
 
 export class UpdateOrderDto {
+  @IsOptional()
   @IsNumber()
   @IsPositive()
   quantity?: number;
 
+  @IsOptional()
   @IsNumber()
   @IsPositive()
   price?: number;
