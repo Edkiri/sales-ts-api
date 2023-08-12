@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'WORKER');
+CREATE TYPE "UserRole" AS ENUM ('WORKER', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "SaleStatus" AS ENUM ('UNPAID', 'REFUNDING', 'FINISHED');

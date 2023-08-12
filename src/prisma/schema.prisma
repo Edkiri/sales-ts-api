@@ -62,6 +62,6 @@ model Order {
 
   product   Product @relation(fields: [productId], references: [id])
   productId Int
-  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  sale      Sale    @relation(fields: [saleId], references: [id])
   saleId    Int
 }

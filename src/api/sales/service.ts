@@ -58,13 +58,16 @@ export class SaleService {
       include: {
         orders: {
           select: {
+            id: true,
+            price: true,
+            quantity: true,
             product: {
               select: {
-                brand: true,
+                id: true,
                 code: true,
                 name: true,
+                brand: true,
                 reference: true,
-                id: true,
               },
             },
           },
@@ -92,8 +95,47 @@ export class SaleService {
   }
 
   public async deleteSaleById(saleId: number) {
-    await this.findSaleById(saleId);
-    await this.prisma.sale.delete({ where: { id: saleId } });
-    return;
+    try {
+      await this.prisma.$transaction(async (transactionalPrisma) => {
+        const saleToDelete = await transactionalPrisma.sale.findFirstOrThrow({
+          where: { id: saleId },
+          include: { orders: true },
+        });
+
+        // Delete all orders associated with this sale and update inventory
+        const deleteOrders = saleToDelete.orders.map(async (order) => {
+          const orderToDelete = await this.prisma.order.findFirstOrThrow({
+            where: { id: order.id },
+          });
+
+          const product = await transactionalPrisma.product.findUniqueOrThrow({
+            where: { id: orderToDelete.productId },
+          });
+
+          // Update inventory after deleting the order
+          await transactionalPrisma.product.update({
+            where: {
+              id: product.id,
+            },
+            data: {
+              stock: {
+                increment: orderToDelete.quantity,
+              },
+            },
+          });
+
+          await transactionalPrisma.order.delete({
+            where: { id: orderToDelete.id },
+          });
+        });
+        await Promise.all(deleteOrders);
+        await transactionalPrisma.sale.delete({ where: { id: saleId } });
+      });
+      return;
+    } catch (error) {
+      throw error;
+    } finally {
+      await this.prisma.$disconnect();
+    }
   }
 }
