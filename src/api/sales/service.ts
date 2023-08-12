@@ -1,6 +1,6 @@
 import { PrismaClient, Sale } from '@prisma/client';
 import { Service } from 'typedi';
-import { CreateSaleDto } from './dtos/sales.dto';
+import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
 
 @Service()
@@ -23,7 +23,7 @@ export class SaleService {
             where: { id: order.productId },
           });
 
-          // Check if there are are enough items in inventory
+          // Check if there are enough items in inventory
           const totalStock = product.stock - order.quantity;
           if (totalStock < 0)
             throw new HttpException(
@@ -73,5 +73,27 @@ export class SaleService {
       },
     });
     return sales;
+  }
+
+  public async updateSale(saleId: number, data: UpdateSaleDto) {
+    const updatedSale = await this.prisma.sale.update({
+      where: { id: saleId },
+      data,
+    });
+    return updatedSale;
+  }
+
+  public async findSaleById(saleId: number) {
+    const sale = await this.prisma.sale.findUnique({ where: { id: saleId } });
+    if (!sale) {
+      throw new HttpException(404, `Not found sale with id ${saleId}`);
+    }
+    return sale;
+  }
+
+  public async deleteSaleById(saleId: number) {
+    await this.findSaleById(saleId);
+    await this.prisma.sale.delete({ where: { id: saleId } });
+    return;
   }
 }

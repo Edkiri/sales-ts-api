@@ -6,7 +6,7 @@ import {
   IsArray,
   ValidateNested,
 } from 'class-validator';
-import { CreateOrderDto } from './orders.dto';
+import { CreateOrderDto } from '../orders/dto';
 import { Type } from 'class-transformer';
 
 export class CreateSaleDto {
@@ -23,4 +23,11 @@ export class CreateSaleDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOrderDto)
   orders!: CreateOrderDto[];
+}
+
+export class UpdateSaleDto {
+  @IsOptional()
+  @MaxLength(255)
+  @IsNotEmpty()
+  public description?: string;
 }

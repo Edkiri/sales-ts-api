@@ -1,11 +1,14 @@
 import { Container } from 'typedi';
 import { SaleService } from './service';
-import { CreateSaleDto } from './dtos/sales.dto';
+import { CreateSaleDto, UpdateSaleDto } from './dto';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Middlewares,
+  Patch,
+  Path,
   Post,
   Route,
   SuccessResponse,
@@ -32,22 +35,22 @@ export class SaleController extends Controller {
     return sales;
   }
 
-  // @Get('/{saleId}')
-  // public async getSale(@Path() saleId: number) {
-  //   const sale = await this.sale.findSaleById(saleId);
-  //   return sale;
-  // }
+  @Patch('/{saleId}')
+  @Middlewares(ValidationMiddleware(UpdateSaleDto))
+  public async updateSale(@Path() saleId: number, @Body() body: UpdateSaleDto) {
+    const updatedSale = await this.sale.updateSale(saleId, body);
+    return updatedSale;
+  }
 
-  // @Patch('/{saleId}')
-  // @Middlewares(ValidationMiddleware(UpdateSaleDto))
-  // public async updateSale(@Path() saleId: number, @Body() body: UpdateSaleDto) {
-  //   const updatedSale = await this.sale.updateSale(saleId, body);
-  //   return updatedSale;
-  // }
+  @Get('/{saleId}')
+  public async getSale(@Path() saleId: number) {
+    const sale = await this.sale.findSaleById(saleId);
+    return sale;
+  }
 
-  // @Delete('/{saleId}')
-  // @SuccessResponse(204, 'Sale deleted')
-  // public async deleteSale(@Path('saleId') saleId: number) {
-  //   await this.sale.deleteSaleById(saleId);
-  // }
+  @Delete('/{saleId}')
+  @SuccessResponse(204, 'Sale deleted')
+  public async deleteSale(@Path('saleId') saleId: number) {
+    await this.sale.deleteSaleById(saleId);
+  }
 }
