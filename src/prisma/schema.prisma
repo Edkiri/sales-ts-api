@@ -74,7 +74,6 @@ model Payment {
 
   method   PaymentMethod
   currency Currency
-  type     PaymentType
 
   saleId    Int
   sale      Sale    @relation(fields: [saleId], references: [id])
@@ -85,7 +84,9 @@ model Payment {
 model Account {
   id       Int       @id @default(autoincrement())
   name     String
+  currency Currency
   payments Payment[]
+  amount   Float     @default(0)
 
   deletedAt DateTime? @default(dbgenerated("null"))
 }
@@ -93,11 +94,6 @@ model Account {
 enum Currency {
   BOLIVARES
   DOLARES
-}
-
-enum PaymentType {
-  PAGO
-  VUELTO
 }
 
 enum PaymentMethod {

@@ -8,14 +8,18 @@ export class SaleService {
   private prisma = new PrismaClient();
 
   public async createSale(data: CreateSaleDto): Promise<Sale | null> {
-    const { orders, ...saleData } = data;
+    const { orders, payments, ...saleData } = data;
 
     let createdSale: Sale | null = null;
 
     try {
       await this.prisma.$transaction(async (transactionalPrisma) => {
         createdSale = await transactionalPrisma.sale.create({
-          data: { ...saleData, orders: { createMany: { data: orders } } },
+          data: {
+            ...saleData,
+            orders: { createMany: { data: orders } },
+            payments: { createMany: { data: payments || [] } },
+          },
         });
 
         const updateProducts = orders.map(async (order) => {
@@ -43,7 +47,23 @@ export class SaleService {
           });
           return updatedProduct;
         });
+        const updateAccounts = payments?.map(async (payment) => {
+          const account = await transactionalPrisma.account.findUniqueOrThrow({
+            where: { id: payment.accountId },
+          });
+
+          const total = payment.rate * payment.amount;
+
+          const updatedAccount = transactionalPrisma.account.update({
+            where: { id: account.id },
+            data: { amount: { increment: total } },
+          });
+          return updatedAccount;
+        });
         await Promise.all(updateProducts);
+        if (payments?.length) {
+          await Promise.all(updateAccounts!);
+        }
       });
       return createdSale;
     } catch (error) {

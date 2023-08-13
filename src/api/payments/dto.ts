@@ -1,4 +1,4 @@
-import { Currency, PaymentMethod, PaymentType } from '@prisma/client';
+import { Currency, PaymentMethod } from '@prisma/client';
 import { IsNumber, IsOptional, IsEnum, IsPositive } from 'class-validator';
 
 export class CreatePaymentDto {
@@ -10,14 +10,11 @@ export class CreatePaymentDto {
   @IsPositive()
   rate!: number;
 
-  @IsEnum(Object.values(PaymentMethod))
+  @IsEnum(PaymentMethod)
   method!: PaymentMethod;
 
-  @IsEnum(Object.values(Currency))
+  @IsEnum(Currency)
   currency!: Currency;
-
-  @IsEnum(Object.values(PaymentType))
-  type!: PaymentType;
 
   @IsOptional()
   @IsNumber()
@@ -47,10 +44,6 @@ export class UpdatePaymentDto {
   @IsOptional()
   @IsEnum(Object.values(Currency))
   currency?: Currency;
-
-  @IsOptional()
-  @IsEnum(Object.values(PaymentType))
-  type?: PaymentType;
 
   @IsOptional()
   @IsNumber()
