@@ -99,33 +99,24 @@ export class SaleService {
       await this.prisma.$transaction(async (transactionalPrisma) => {
         const saleToDelete = await transactionalPrisma.sale.findFirstOrThrow({
           where: { id: saleId },
-          include: { orders: true },
+          include: { orders: { include: { product: true } } },
         });
 
         // Delete all orders associated with this sale and update inventory
         const deleteOrders = saleToDelete.orders.map(async (order) => {
-          const orderToDelete = await this.prisma.order.findFirstOrThrow({
-            where: { id: order.id },
-          });
-
-          const product = await transactionalPrisma.product.findUniqueOrThrow({
-            where: { id: orderToDelete.productId },
-          });
-
-          // Update inventory after deleting the order
           await transactionalPrisma.product.update({
             where: {
-              id: product.id,
+              id: order.product.id,
             },
             data: {
               stock: {
-                increment: orderToDelete.quantity,
+                increment: order.quantity,
               },
             },
           });
 
           await transactionalPrisma.order.delete({
-            where: { id: orderToDelete.id },
+            where: { id: order.id },
           });
         });
         await Promise.all(deleteOrders);

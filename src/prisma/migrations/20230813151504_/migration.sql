@@ -4,6 +4,15 @@ CREATE TYPE "UserRole" AS ENUM ('WORKER', 'ADMIN');
 -- CreateEnum
 CREATE TYPE "SaleStatus" AS ENUM ('UNPAID', 'REFUNDING', 'FINISHED');
 
+-- CreateEnum
+CREATE TYPE "Currency" AS ENUM ('BOLIVARES', 'DOLARES');
+
+-- CreateEnum
+CREATE TYPE "PaymentType" AS ENUM ('PAGO', 'VUELTO');
+
+-- CreateEnum
+CREATE TYPE "PaymentMethod" AS ENUM ('PUNTO', 'PAGO_MOVIL', 'TRANSFERENCIA', 'EFECTIVO', 'ZELLE', 'PAYPAL', 'BINANCE');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -59,6 +68,29 @@ CREATE TABLE "Order" (
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" SERIAL NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "rate" DOUBLE PRECISION NOT NULL,
+    "method" "PaymentMethod" NOT NULL,
+    "currency" "Currency" NOT NULL,
+    "type" "PaymentType" NOT NULL,
+    "saleId" INTEGER NOT NULL,
+    "accountId" INTEGER NOT NULL,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "deletedAt" TIMESTAMP(3) DEFAULT null,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -79,3 +111,9 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productI
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "Sale"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "Sale"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

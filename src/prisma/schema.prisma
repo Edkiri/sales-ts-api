@@ -39,9 +39,10 @@ model Sale {
   status      SaleStatus @default(UNPAID)
   description String?
 
-  client   Client? @relation(fields: [clientId], references: [id])
+  client   Client?   @relation(fields: [clientId], references: [id])
   clientId Int?
   orders   Order[]
+  payments Payment[]
 }
 
 model Product {
@@ -64,4 +65,47 @@ model Order {
   productId Int
   sale      Sale    @relation(fields: [saleId], references: [id])
   saleId    Int
+}
+
+model Payment {
+  id     Int   @id @default(autoincrement())
+  amount Float
+  rate   Float
+
+  method   PaymentMethod
+  currency Currency
+  type     PaymentType
+
+  saleId    Int
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id])
+}
+
+model Account {
+  id       Int       @id @default(autoincrement())
+  name     String
+  payments Payment[]
+
+  deletedAt DateTime? @default(dbgenerated("null"))
+}
+
+enum Currency {
+  BOLIVARES
+  DOLARES
+}
+
+enum PaymentType {
+  PAGO
+  VUELTO
+}
+
+enum PaymentMethod {
+  PUNTO
+  PAGO_MOVIL
+  TRANSFERENCIA
+  EFECTIVO
+  ZELLE
+  PAYPAL
+  BINANCE
 }
