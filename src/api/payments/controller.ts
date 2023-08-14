@@ -4,7 +4,9 @@ import { CreatePaymentDto } from './dto';
 import {
   Body,
   Controller,
+  Delete,
   Middlewares,
+  Path,
   Post,
   Response,
   Route,
@@ -25,5 +27,11 @@ export class PaymentController extends Controller {
   public async createPayment(@Body() body: CreatePaymentDto) {
     const createdPaymentData = await this.payment.createPayment(body);
     return createdPaymentData;
+  }
+
+  @Delete('/{paymentId}')
+  @SuccessResponse(204, 'Payment deleted')
+  public async deleteOrder(@Path('paymentId') paymentId: number) {
+    await this.payment.deletePayment(paymentId);
   }
 }

@@ -3,11 +3,13 @@ import { CreatePaymentDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
 import { SaleService } from '../sales/service';
 import Container, { Service } from 'typedi';
+import { AccountService } from '../accounts/service';
 
 @Service()
 export class PaymentService {
   private prisma = new PrismaClient();
-  private sale = Container.get(SaleService);
+  private saleService = Container.get(SaleService);
+  private accountService = Container.get(AccountService);
 
   public async createPayment(
     paymentData: CreatePaymentDto,
@@ -22,29 +24,59 @@ export class PaymentService {
           data: { ...paymentData, saleId: paymentData.saleId },
         });
 
-        const account = await transactionalPrisma.account.findUniqueOrThrow({
-          where: { id: createdPayment.accountId },
-        });
-
-        const total = paymentData.rate * paymentData.amount;
-        const totalAccount = account.amount + total;
-
-        if (totalAccount < 0) {
-          throw new HttpException(422, 'Not enough money on this account');
-        }
-
-        await transactionalPrisma.account.update({
-          where: { id: account.id },
-          data: { amount: { increment: total } },
-        });
+        await this.accountService.addPayment(
+          transactionalPrisma,
+          createdPayment,
+        );
 
         // Update sale status
-        await this.sale.checkSaleStatus(
+        await this.saleService.checkSaleStatus(
           createdPayment.saleId,
           transactionalPrisma,
         );
       });
       return createdPayment;
+    } catch (error) {
+      throw error;
+    } finally {
+      await this.prisma.$disconnect();
+    }
+  }
+
+  public async deletePayment(paymentId: number) {
+    try {
+      await this.prisma.$transaction(async (transactionalPrisma) => {
+        const paymentToDelete = await this.prisma.payment.findFirstOrThrow({
+          where: { id: paymentId },
+        });
+
+        const account = await transactionalPrisma.account.findUniqueOrThrow({
+          where: { id: paymentToDelete.accountId },
+        });
+
+        // Update inventory after deleting the payment
+        await transactionalPrisma.account.update({
+          where: {
+            id: account.id,
+          },
+          data: {
+            amount: {
+              decrement: paymentToDelete.amount,
+            },
+          },
+        });
+
+        await transactionalPrisma.payment.delete({
+          where: { id: paymentToDelete.id },
+        });
+
+        // Update sale status
+        await this.saleService.checkSaleStatus(
+          paymentToDelete.saleId,
+          transactionalPrisma,
+        );
+      });
+      return;
     } catch (error) {
       throw error;
     } finally {

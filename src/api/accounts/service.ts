@@ -1,7 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { Payment, PrismaClient } from '@prisma/client';
 import { Service } from 'typedi';
 import { CreateAccountDto, UpdateAccountDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
+import { PrismaTransactionClient } from '../../types';
 
 @Service()
 export class AccountService {
@@ -46,5 +47,26 @@ export class AccountService {
       data: { deletedAt: new Date() },
     });
     return;
+  }
+
+  public async addPayment(
+    transactionalPrisma: PrismaTransactionClient,
+    payment: Payment,
+  ) {
+    const account = await transactionalPrisma.account.findUniqueOrThrow({
+      where: { id: payment.accountId },
+    });
+
+    const total = payment.rate * payment.amount;
+    const totalAccount = account.amount + total;
+
+    if (totalAccount < 0) {
+      throw new HttpException(422, 'Not enough money on this account');
+    }
+
+    await transactionalPrisma.account.update({
+      where: { id: account.id },
+      data: { amount: { increment: total } },
+    });
   }
 }
