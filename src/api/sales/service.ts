@@ -47,21 +47,29 @@ export class SaleService {
           });
           return updatedProduct;
         });
-        const updateAccounts = payments?.map(async (payment) => {
-          const account = await transactionalPrisma.account.findUniqueOrThrow({
-            where: { id: payment.accountId },
-          });
-
-          const total = payment.rate * payment.amount;
-
-          const updatedAccount = transactionalPrisma.account.update({
-            where: { id: account.id },
-            data: { amount: { increment: total } },
-          });
-          return updatedAccount;
-        });
         await Promise.all(updateProducts);
+
         if (payments?.length) {
+          const updateAccounts = payments?.map(async (payment) => {
+            const account = await transactionalPrisma.account.findUniqueOrThrow(
+              {
+                where: { id: payment.accountId },
+              },
+            );
+
+            const total = payment.rate * payment.amount;
+            const totalAccount = account.amount + total;
+
+            if (totalAccount < 0) {
+              throw new HttpException(422, 'Not enough money on this account');
+            }
+
+            const updatedAccount = transactionalPrisma.account.update({
+              where: { id: account.id },
+              data: { amount: { increment: total } },
+            });
+            return updatedAccount;
+          });
           await Promise.all(updateAccounts!);
         }
       });

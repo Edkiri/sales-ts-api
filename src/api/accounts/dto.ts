@@ -1,4 +1,3 @@
-import { Currency } from '@prisma/client';
 import {
   IsEnum,
   IsNumber,
@@ -6,6 +5,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { Currencies } from '../../enums/currencies.enum';
 
 export class CreateAccountDto {
   @IsString()
@@ -15,8 +15,8 @@ export class CreateAccountDto {
   @IsNumber()
   amount?: number;
 
-  @IsEnum(Currency)
-  currency!: Currency;
+  @IsEnum(Currencies)
+  currency!: Currencies;
 }
 
 export class UpdateAccountDto {

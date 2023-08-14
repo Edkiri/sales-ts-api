@@ -4,15 +4,6 @@ CREATE TYPE "UserRole" AS ENUM ('WORKER', 'ADMIN');
 -- CreateEnum
 CREATE TYPE "SaleStatus" AS ENUM ('UNPAID', 'REFUNDING', 'FINISHED');
 
--- CreateEnum
-CREATE TYPE "Currency" AS ENUM ('BOLIVARES', 'DOLARES');
-
--- CreateEnum
-CREATE TYPE "PaymentType" AS ENUM ('PAGO', 'VUELTO');
-
--- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('PUNTO', 'PAGO_MOVIL', 'TRANSFERENCIA', 'EFECTIVO', 'ZELLE', 'PAYPAL', 'BINANCE');
-
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -73,9 +64,8 @@ CREATE TABLE "Payment" (
     "id" SERIAL NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "rate" DOUBLE PRECISION NOT NULL,
-    "method" "PaymentMethod" NOT NULL,
-    "currency" "Currency" NOT NULL,
-    "type" "PaymentType" NOT NULL,
+    "method" INTEGER NOT NULL,
+    "currency" INTEGER NOT NULL,
     "saleId" INTEGER NOT NULL,
     "accountId" INTEGER NOT NULL,
 
@@ -86,6 +76,8 @@ CREATE TABLE "Payment" (
 CREATE TABLE "Account" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "currency" INTEGER NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "deletedAt" TIMESTAMP(3) DEFAULT null,
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
