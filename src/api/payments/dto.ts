@@ -40,13 +40,4 @@ export class UpdatePaymentDto {
   @IsOptional()
   @IsEnum(PaymentMethods)
   method?: PaymentMethods;
-
-  @IsOptional()
-  @IsEnum(Currencies)
-  currency?: Currencies;
-
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  accountId?: number;
 }
