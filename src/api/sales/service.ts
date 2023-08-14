@@ -127,7 +127,10 @@ export class SaleService {
       await this.prisma.$transaction(async (transactionalPrisma) => {
         const saleToDelete = await transactionalPrisma.sale.findFirstOrThrow({
           where: { id: saleId },
-          include: { orders: { include: { product: true } } },
+          include: {
+            orders: { include: { product: true } },
+            payments: { include: { account: true } },
+          },
         });
 
         // Delete all orders associated with this sale and update inventory
@@ -148,6 +151,24 @@ export class SaleService {
           });
         });
         await Promise.all(deleteOrders);
+
+        // delete all payments associatd with this sale and update accounts
+        const deletePayments = saleToDelete.payments.map(async (payment) => {
+          await transactionalPrisma.account.update({
+            where: {
+              id: payment.account.id,
+            },
+            data: {
+              amount: {
+                decrement: payment.amount,
+              },
+            },
+          });
+          await transactionalPrisma.payment.delete({
+            where: { id: payment.id },
+          });
+        });
+        await Promise.all(deletePayments);
         await transactionalPrisma.sale.delete({ where: { id: saleId } });
       });
       return;
