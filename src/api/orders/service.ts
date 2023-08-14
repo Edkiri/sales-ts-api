@@ -1,11 +1,13 @@
 import { Order, PrismaClient } from '@prisma/client';
-import { Service } from 'typedi';
+import Container, { Service } from 'typedi';
 import { CreateOrderDto, UpdateOrderDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
+import { SaleService } from '../sales/service';
 
 @Service()
 export class OrderService {
   private prisma = new PrismaClient();
+  private sale = Container.get(SaleService);
 
   public async createOrder(orderData: CreateOrderDto) {
     let createdOrder: Order | null = null;
@@ -40,6 +42,12 @@ export class OrderService {
             },
           },
         });
+
+        // Update sale status
+        await this.sale.checkSaleStatus(
+          createdOrder.saleId,
+          transactionalPrisma,
+        );
       });
       return createdOrder;
     } catch (error) {
@@ -100,6 +108,12 @@ export class OrderService {
               },
             },
           });
+
+          // Update sale status
+          await this.sale.checkSaleStatus(
+            existingOrder.saleId,
+            transactionalPrisma,
+          );
         }
       });
       return updatedOrder;
@@ -136,6 +150,12 @@ export class OrderService {
             },
           },
         });
+
+        // Update sale status
+        await this.sale.checkSaleStatus(
+          orderToDelete.saleId,
+          transactionalPrisma,
+        );
       });
       return;
     } catch (error) {

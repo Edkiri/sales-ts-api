@@ -28,15 +28,9 @@ model Client {
   sales        Sale[]
 }
 
-enum SaleStatus {
-  UNPAID
-  REFUNDING
-  FINISHED
-}
-
 model Sale {
-  id          Int        @id @default(autoincrement())
-  status      SaleStatus @default(UNPAID)
+  id          Int     @id @default(autoincrement())
+  status      Int     @default(1)
   description String?
 
   client   Client?   @relation(fields: [clientId], references: [id])

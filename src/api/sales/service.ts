@@ -2,6 +2,9 @@ import { PrismaClient, Sale } from '@prisma/client';
 import { Service } from 'typedi';
 import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
+import { SaleStatus } from '../../enums/sale-status..enum';
+import { almostCero } from '../../utis';
+import { PrismaTransactionClient } from '../../types';
 
 @Service()
 export class SaleService {
@@ -72,6 +75,12 @@ export class SaleService {
           });
           await Promise.all(updateAccounts!);
         }
+
+        // Check for sale status
+        createdSale = await this.checkSaleStatus(
+          createdSale.id,
+          transactionalPrisma,
+        );
       });
       return createdSale;
     } catch (error) {
@@ -177,5 +186,37 @@ export class SaleService {
     } finally {
       await this.prisma.$disconnect();
     }
+  }
+
+  public async checkSaleStatus(
+    saleId: number,
+    transactionalPrisma: PrismaTransactionClient,
+  ) {
+    const saleToCheck = await transactionalPrisma.sale.findFirstOrThrow({
+      where: { id: saleId },
+      include: { payments: true, orders: true },
+    });
+    const totalOrders = saleToCheck.orders.reduce((prev, order) => {
+      return prev + order.price * order.quantity;
+    }, 0);
+    const totalPayments = saleToCheck.payments.reduce((prev, payment) => {
+      return prev + payment.amount / payment.rate;
+    }, 0);
+    const totalSale = totalOrders - totalPayments;
+
+    let status: SaleStatus = SaleStatus.UNPAID;
+    if (totalSale < 0) {
+      status = SaleStatus.REFUNDING;
+    }
+    if (almostCero(totalSale)) {
+      status = SaleStatus.FINISHED;
+    }
+
+    return transactionalPrisma.sale.update({
+      where: { id: saleId },
+      data: {
+        status,
+      },
+    });
   }
 }
