@@ -57,12 +57,20 @@ export class OrderService {
     }
   }
 
-  public async updateOrder(orderId: number, data: UpdateOrderDto) {
+  public async updateOrder(
+    orderId: number,
+    data: UpdateOrderDto,
+  ): Promise<Order | null> {
     let updatedOrder: Order | null = null;
     try {
       await this.prisma.$transaction(async (transactionalPrisma) => {
         const existingOrder = await this.prisma.order.findFirstOrThrow({
           where: { id: orderId },
+        });
+
+        updatedOrder = await transactionalPrisma.order.update({
+          where: { id: orderId },
+          data,
         });
 
         if (data.quantity) {
@@ -79,11 +87,6 @@ export class OrderService {
               `There are not enough '${product.name}' in inventory to complete the update, there are '${product.stock}' registered in inventory`,
             );
           }
-
-          updatedOrder = await transactionalPrisma.order.update({
-            where: { id: orderId },
-            data,
-          });
 
           // Revert stock change from the original order
           await transactionalPrisma.product.update({
@@ -108,13 +111,12 @@ export class OrderService {
               },
             },
           });
-
-          // Update sale status
-          await this.sale.checkSaleStatus(
-            existingOrder.saleId,
-            transactionalPrisma,
-          );
         }
+        // Update sale status
+        await this.sale.checkSaleStatus(
+          existingOrder.saleId,
+          transactionalPrisma,
+        );
       });
       return updatedOrder;
     } catch (error) {
