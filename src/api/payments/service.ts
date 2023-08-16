@@ -38,32 +38,61 @@ export class PaymentService {
   public async updatePayment(
     paymentId: number,
     data: UpdatePaymentDto,
-  ): Promise<Payment> {
+  ): Promise<Payment | null> {
+    let updatedPayment: Payment | null = null;
     try {
-      return await this.prisma.$transaction(async (tx) => {
-        const existingPayment = await tx.payment.findFirstOrThrow({
+      await this.prisma.$transaction(async (tx) => {
+        const existingPayment = await this.prisma.payment.findFirstOrThrow({
           where: { id: paymentId },
           include: { account: true },
         });
 
-        const updatedPayment = await tx.payment.update({
+        updatedPayment = await tx.payment.update({
           where: { id: paymentId },
           data,
         });
 
         if (data.amount || data.rate) {
+          const account = await tx.account.findUniqueOrThrow({
+            where: { id: existingPayment.accountId },
+          });
+
+          const amount = data.amount || existingPayment.amount;
+          const rate = data.rate || existingPayment.rate;
+          const total = amount * rate;
+
           // Revert stock change from the original Payment
-          await this.accountService.removePayment(existingPayment, tx);
+          await tx.account.update({
+            where: {
+              id: account.id,
+            },
+            data: {
+              amount: {
+                decrement: existingPayment.amount * existingPayment.rate,
+              },
+            },
+          });
 
           // Apply stock change for the updated Payment
-          await this.accountService.addPayment(updatedPayment, tx);
+          const updatedAccount = await tx.account.update({
+            where: {
+              id: account.id,
+            },
+            data: {
+              amount: {
+                increment: total,
+              },
+            },
+          });
 
-          // Update sale status
-          await this.saleService.checkSaleStatus(existingPayment.saleId, tx);
+          if (updatedAccount.amount < 0) {
+            throw new HttpException(422, 'Not enough money on this account');
+          }
         }
-
-        return updatedPayment;
+        // Update sale status
+        await this.saleService.checkSaleStatus(existingPayment.saleId, tx);
       });
+      return updatedPayment;
     } catch (error) {
       throw error;
     } finally {
