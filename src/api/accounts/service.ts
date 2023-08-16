@@ -6,7 +6,7 @@ import { CreatePaymentDto } from '../payments/dto';
 import prisma from '../../prisma/prisma';
 import { PrismaTransactionClient } from 'types';
 
-@Service('account-service')
+@Service()
 export class AccountService {
   public async createAccount(accountData: CreateAccountDto) {
     const createdAccountData = await prisma.account.create({
