@@ -7,7 +7,9 @@
     "build": "tsoa spec-and-routes && tsc",
     "start": "npm run build && node dist/index.js",
     "dev": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
-    "prisma:migrate": "prisma migrate dev --preview-feature"
+    "prisma:migrate": "prisma migrate dev --preview-feature",
+    "test:unit": "vitest -c ./vitest.config.unit.ts",
+    "test:unit:ui": "vitest -c ./vitest.config.unit.ts --ui"
   },
   "keywords": [],
   "author": "",
@@ -38,12 +40,10 @@
     "@types/cookie-parser": "^1.4.3",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
-    "@types/jest": "^29.5.3",
     "@types/joi": "^17.2.3",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/morgan": "^1.9.4",
     "@types/node": "^20.4.8",
-    "@types/supertest": "^2.0.12",
     "@types/swagger-ui-express": "^4.1.3",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
@@ -53,13 +53,11 @@
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.28.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "jest": "^29.6.2",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.1",
-    "prisma": "^5.1.1",
-    "supertest": "^6.3.3",
-    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.1",
+    "vitest-mock-extended": "^1.2.0"
   }
 }

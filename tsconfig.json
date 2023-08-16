@@ -39,6 +39,6 @@
     /* Advanced Options */
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["./*.js", "src/**/*.ts"],
+  "include": ["./*.js", "src/**/*.ts", "./*.ts"],
   "exclude": ["node_modules"]
 }

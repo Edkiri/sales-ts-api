@@ -3,7 +3,7 @@ import { Service } from 'typedi';
 import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
 import { SaleStatus } from '../../enums/sale-status..enum';
-import { almostCero } from '../../utis';
+import { isAlmostCero } from '../../utis/functions';
 import { PrismaTransactionClient } from '../../types';
 
 @Service()
@@ -208,7 +208,7 @@ export class SaleService {
     if (totalSale < 0) {
       status = SaleStatus.REFUNDING;
     }
-    if (almostCero(totalSale)) {
+    if (isAlmostCero(totalSale)) {
       status = SaleStatus.FINISHED;
     }
 
