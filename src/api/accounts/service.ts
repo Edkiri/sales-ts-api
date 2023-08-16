@@ -1,15 +1,15 @@
-import { Payment, PrismaClient } from '@prisma/client';
+import { Payment } from '@prisma/client';
 import { Service } from 'typedi';
 import { CreateAccountDto, UpdateAccountDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
-import { PrismaTransactionClient } from '../../types';
+import { CreatePaymentDto } from '../payments/dto';
+import prisma from '../../prisma/prisma';
+import { PrismaTransactionClient } from 'types';
 
 @Service()
 export class AccountService {
-  public client = new PrismaClient();
-
   public async createAccount(accountData: CreateAccountDto) {
-    const createdAccountData = await this.client.account.create({
+    const createdAccountData = await prisma.account.create({
       data: accountData,
     });
 
@@ -17,12 +17,12 @@ export class AccountService {
   }
 
   public async findAccounts() {
-    const accounts = await this.client.account.findMany();
+    const accounts = await prisma.account.findMany();
     return accounts;
   }
 
   public async findAccountById(accountId: number) {
-    const account = await this.client.account.findUnique({
+    const account = await prisma.account.findUnique({
       where: { id: accountId },
     });
     if (!account) {
@@ -33,7 +33,7 @@ export class AccountService {
 
   public async updateAccount(accountId: number, data: UpdateAccountDto) {
     await this.findAccountById(accountId);
-    const updatedAccount = await this.client.account.update({
+    const updatedAccount = await prisma.account.update({
       where: { id: accountId },
       data,
     });
@@ -42,7 +42,7 @@ export class AccountService {
 
   public async softDeleteAccountById(accountId: number) {
     await this.findAccountById(accountId);
-    await this.client.account.update({
+    await prisma.account.update({
       where: { id: accountId },
       data: { deletedAt: new Date() },
     });
@@ -50,10 +50,12 @@ export class AccountService {
   }
 
   public async addPayment(
-    transactionalPrisma: PrismaTransactionClient,
-    payment: Payment,
+    payment: Payment | CreatePaymentDto,
+    tx?: PrismaTransactionClient | undefined,
   ) {
-    const account = await transactionalPrisma.account.findUniqueOrThrow({
+    const prismaClient = tx || prisma;
+
+    const account = await prismaClient.account.findUniqueOrThrow({
       where: { id: payment.accountId },
     });
 
@@ -64,9 +66,27 @@ export class AccountService {
       throw new HttpException(422, 'Not enough money on this account');
     }
 
-    await transactionalPrisma.account.update({
+    return await prismaClient.account.update({
       where: { id: account.id },
       data: { amount: { increment: total } },
+    });
+  }
+
+  public async removePayment(
+    payment: Payment,
+    tx?: PrismaTransactionClient | undefined,
+  ) {
+    const prismaClient = tx || prisma;
+
+    const account = await prismaClient.account.findUniqueOrThrow({
+      where: { id: payment.accountId },
+    });
+
+    const total = payment.rate * payment.amount;
+
+    return await prismaClient.account.update({
+      where: { id: account.id },
+      data: { amount: { decrement: total } },
     });
   }
 }

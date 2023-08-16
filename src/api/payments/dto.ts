@@ -29,7 +29,6 @@ export class CreatePaymentDto {
 export class UpdatePaymentDto {
   @IsOptional()
   @IsNumber()
-  @IsPositive()
   amount?: number;
 
   @IsOptional()

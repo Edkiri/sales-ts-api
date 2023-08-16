@@ -29,7 +29,7 @@
 
     /* Module Resolution Options */
     "moduleResolution": "node",
-    "baseUrl": ".",
+    "baseUrl": "src/",
     "esModuleInterop": true,
 
     /* Experimental Options */

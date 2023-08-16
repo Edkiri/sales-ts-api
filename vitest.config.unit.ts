@@ -5,6 +5,8 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
   },
   resolve: {
-    alias: {},
+    alias: {
+      prisma: '/src/prisma',
+    },
   },
 });

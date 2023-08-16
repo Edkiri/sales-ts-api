@@ -11,31 +11,23 @@ export class PaymentService {
   private saleService = Container.get(SaleService);
   private accountService = Container.get(AccountService);
 
-  public async createPayment(
-    paymentData: CreatePaymentDto,
-  ): Promise<Payment | null> {
-    let createdPayment: Payment | null = null;
+  public async createPayment(paymentData: CreatePaymentDto): Promise<Payment> {
     try {
-      await this.prisma.$transaction(async (transactionalPrisma) => {
+      return await this.prisma.$transaction(async (tx) => {
         if (!paymentData.saleId) {
           throw new HttpException(400, `'saleId' is required`);
         }
-        createdPayment = await transactionalPrisma.payment.create({
+
+        await this.accountService.addPayment(paymentData, tx);
+
+        const createdPayment = await tx.payment.create({
           data: { ...paymentData, saleId: paymentData.saleId },
         });
 
-        await this.accountService.addPayment(
-          transactionalPrisma,
-          createdPayment,
-        );
-
         // Update sale status
-        await this.saleService.checkSaleStatus(
-          createdPayment.saleId,
-          transactionalPrisma,
-        );
+        await this.saleService.checkSaleStatus(createdPayment.saleId, tx);
+        return createdPayment;
       });
-      return createdPayment;
     } catch (error) {
       throw error;
     } finally {
@@ -46,64 +38,32 @@ export class PaymentService {
   public async updatePayment(
     paymentId: number,
     data: UpdatePaymentDto,
-  ): Promise<Payment | null> {
-    let updatedPayment: Payment | null = null;
+  ): Promise<Payment> {
     try {
-      await this.prisma.$transaction(async (transactionalPrisma) => {
-        const existingPayment = await this.prisma.payment.findFirstOrThrow({
+      return await this.prisma.$transaction(async (tx) => {
+        const existingPayment = await tx.payment.findFirstOrThrow({
           where: { id: paymentId },
           include: { account: true },
         });
 
-        updatedPayment = await transactionalPrisma.payment.update({
+        const updatedPayment = await tx.payment.update({
           where: { id: paymentId },
           data,
         });
 
         if (data.amount || data.rate) {
-          const account = await transactionalPrisma.account.findUniqueOrThrow({
-            where: { id: existingPayment.accountId },
-          });
-
-          const amount = data.amount || existingPayment.amount;
-          const rate = data.rate || existingPayment.rate;
-          const total = amount * rate;
-
           // Revert stock change from the original Payment
-          await transactionalPrisma.account.update({
-            where: {
-              id: account.id,
-            },
-            data: {
-              amount: {
-                decrement: existingPayment.amount * existingPayment.rate,
-              },
-            },
-          });
+          await this.accountService.removePayment(existingPayment, tx);
 
           // Apply stock change for the updated Payment
-          const updatedAccount = await transactionalPrisma.account.update({
-            where: {
-              id: account.id,
-            },
-            data: {
-              amount: {
-                increment: total,
-              },
-            },
-          });
+          await this.accountService.addPayment(updatedPayment, tx);
 
-          if (updatedAccount.amount < 0) {
-            throw new HttpException(422, 'Not enough money on this account');
-          }
+          // Update sale status
+          await this.saleService.checkSaleStatus(existingPayment.saleId, tx);
         }
-        // Update sale status
-        await this.saleService.checkSaleStatus(
-          existingPayment.saleId,
-          transactionalPrisma,
-        );
+
+        return updatedPayment;
       });
-      return updatedPayment;
     } catch (error) {
       throw error;
     } finally {
@@ -113,17 +73,17 @@ export class PaymentService {
 
   public async deletePayment(paymentId: number) {
     try {
-      await this.prisma.$transaction(async (transactionalPrisma) => {
+      await this.prisma.$transaction(async (tx) => {
         const paymentToDelete = await this.prisma.payment.findFirstOrThrow({
           where: { id: paymentId },
         });
 
-        const account = await transactionalPrisma.account.findUniqueOrThrow({
+        const account = await tx.account.findUniqueOrThrow({
           where: { id: paymentToDelete.accountId },
         });
 
         // Update inventory after deleting the payment
-        await transactionalPrisma.account.update({
+        await tx.account.update({
           where: {
             id: account.id,
           },
@@ -134,15 +94,12 @@ export class PaymentService {
           },
         });
 
-        await transactionalPrisma.payment.delete({
+        await tx.payment.delete({
           where: { id: paymentToDelete.id },
         });
 
         // Update sale status
-        await this.saleService.checkSaleStatus(
-          paymentToDelete.saleId,
-          transactionalPrisma,
-        );
+        await this.saleService.checkSaleStatus(paymentToDelete.saleId, tx);
       });
       return;
     } catch (error) {
