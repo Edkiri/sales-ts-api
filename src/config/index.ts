@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import Joi from 'joi';
-import { Config } from 'src/interfaces/config.interface';
+import { Config } from '../interfaces/config.interface';
 
 dotenv.config();
 

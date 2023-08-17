@@ -11,6 +11,10 @@ export class CreateOrderDto {
 
   @IsNumber()
   @IsPositive()
+  rate!: number;
+
+  @IsNumber()
+  @IsPositive()
   productId!: number;
 
   @IsOptional()
@@ -29,4 +33,9 @@ export class UpdateOrderDto {
   @IsNumber()
   @IsPositive()
   price?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  rate?: number;
 }

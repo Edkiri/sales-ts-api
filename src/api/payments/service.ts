@@ -4,6 +4,7 @@ import { HttpException } from '../../exceptions/httpException';
 import { SaleService } from '../sales/service';
 import Container, { Service } from 'typedi';
 import { AccountService } from '../accounts/service';
+import { PrismaTransactionClient } from 'types';
 
 @Service()
 export class PaymentService {
@@ -11,30 +12,43 @@ export class PaymentService {
   private saleService = Container.get(SaleService);
   private accountService = Container.get(AccountService);
 
-  public async createPayment(paymentData: CreatePaymentDto): Promise<Payment> {
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        if (!paymentData.saleId) {
-          throw new HttpException(400, `'saleId' is required`);
-        }
-
-        // Apply account change for the created payment
-        await this.accountService.addPayment(paymentData, tx);
-
-        const createdPayment = await tx.payment.create({
-          data: { ...paymentData, saleId: paymentData.saleId },
+  public async createPayment(
+    paymentData: CreatePaymentDto,
+    tx?: PrismaTransactionClient | undefined,
+  ): Promise<Payment> {
+    if (!tx) {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
+          return await this.createPaymentWithTransaction(paymentData, tx);
         });
-
-        // Update sale status
-        await this.saleService.checkSaleStatus(createdPayment.saleId, tx);
-
-        return createdPayment;
-      });
-    } catch (error) {
-      throw error;
-    } finally {
-      await this.prisma.$disconnect();
+      } catch (error) {
+        throw error;
+      } finally {
+        await this.prisma.$disconnect();
+      }
     }
+    return this.createPaymentWithTransaction(paymentData, tx);
+  }
+
+  private async createPaymentWithTransaction(
+    paymentData: CreatePaymentDto,
+    tx: PrismaTransactionClient,
+  ): Promise<Payment> {
+    if (!paymentData.saleId) {
+      throw new HttpException(400, `'saleId' is required`);
+    }
+
+    // Apply account change for the created payment
+    await this.accountService.addPayment(paymentData, tx);
+
+    const createdPayment = await tx.payment.create({
+      data: { ...paymentData, saleId: paymentData.saleId },
+    });
+
+    // Update sale status
+    await this.saleService.checkSaleStatus(createdPayment.saleId, tx);
+
+    return createdPayment;
   }
 
   public async updatePayment(
@@ -72,28 +86,42 @@ export class PaymentService {
     }
   }
 
-  public async deletePayment(paymentId: number) {
-    try {
-      await this.prisma.$transaction(async (tx) => {
-        const paymentToDelete = await this.prisma.payment.findFirstOrThrow({
-          where: { id: paymentId },
+  public async deletePayment(
+    paymentId: number,
+    tx?: PrismaTransactionClient | undefined,
+  ): Promise<void> {
+    if (!tx) {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
+          return this.deletePaymentWithTransaction(paymentId, tx);
         });
-
-        // Update account amount after before payment
-        await this.accountService.removePayment(paymentToDelete, tx);
-
-        await tx.payment.delete({
-          where: { id: paymentToDelete.id },
-        });
-
-        // Update sale status
-        await this.saleService.checkSaleStatus(paymentToDelete.saleId, tx);
-      });
-      return;
-    } catch (error) {
-      throw error;
-    } finally {
-      await this.prisma.$disconnect();
+      } catch (error) {
+        throw error;
+      } finally {
+        await this.prisma.$disconnect();
+      }
     }
+    return this.deletePaymentWithTransaction(paymentId, tx);
+  }
+
+  private async deletePaymentWithTransaction(
+    paymentId: number,
+    tx: PrismaTransactionClient,
+  ): Promise<void> {
+    const paymentToDelete = await tx.payment.findFirstOrThrow({
+      where: { id: paymentId },
+    });
+
+    // Update account amount before delete payment
+    await this.accountService.removePayment(paymentToDelete, tx);
+
+    // Update sale status
+    await this.saleService.checkSaleStatus(paymentToDelete.saleId, tx);
+
+    await tx.payment.delete({
+      where: { id: paymentToDelete.id },
+    });
+
+    return;
   }
 }

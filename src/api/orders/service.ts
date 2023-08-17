@@ -3,122 +3,82 @@ import Container, { Service } from 'typedi';
 import { CreateOrderDto, UpdateOrderDto } from './dto';
 import { HttpException } from '../../exceptions/httpException';
 import { SaleService } from '../sales/service';
+import { ProductService } from '../products/service';
+import { PrismaTransactionClient } from 'types';
 
 @Service()
 export class OrderService {
   private prisma = new PrismaClient();
-  private sale = Container.get(SaleService);
+  private saleService = Container.get(SaleService);
+  private productService = Container.get(ProductService);
 
-  public async createOrder(orderData: CreateOrderDto) {
-    let createdOrder: Order | null = null;
-    try {
-      await this.prisma.$transaction(async (transactionalPrisma) => {
-        if (!orderData.saleId) {
-          throw new HttpException(400, `'saleId' is required`);
-        }
-        createdOrder = await transactionalPrisma.order.create({
-          data: { ...orderData, saleId: orderData.saleId },
+  public async createOrder(
+    orderData: CreateOrderDto,
+    tx?: PrismaTransactionClient | undefined,
+  ): Promise<Order> {
+    if (!tx) {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
+          return await this.createOrderWithTransaction(orderData, tx);
         });
-
-        const product = await transactionalPrisma.product.findUniqueOrThrow({
-          where: { id: createdOrder.productId },
-        });
-
-        // Check if there are enough items in inventory
-        const totalStock = product.stock - orderData.quantity;
-        if (totalStock < 0)
-          throw new HttpException(
-            409,
-            `There are not enough '${product.name}' in inventory to complete the sale, there are '${product.stock}' registered in inventory`,
-          );
-
-        await transactionalPrisma.product.update({
-          where: {
-            id: createdOrder.productId,
-          },
-          data: {
-            stock: {
-              decrement: orderData.quantity,
-            },
-          },
-        });
-
-        // Update sale status
-        await this.sale.checkSaleStatus(
-          createdOrder.saleId,
-          transactionalPrisma,
-        );
-      });
-      return createdOrder;
-    } catch (error) {
-      throw error;
-    } finally {
-      await this.prisma.$disconnect();
+      } catch (error) {
+        throw error;
+      } finally {
+        await this.prisma.$disconnect();
+      }
     }
+
+    return this.createOrderWithTransaction(orderData, tx);
+  }
+
+  private async createOrderWithTransaction(
+    orderData: CreateOrderDto,
+    tx: PrismaTransactionClient,
+  ): Promise<Order> {
+    if (!orderData.saleId) {
+      throw new HttpException(400, `'saleId' is required`);
+    }
+    const createdOrder = await tx.order.create({
+      data: { ...orderData, saleId: orderData.saleId },
+    });
+
+    // update product stock
+    await this.productService.addOrder(createdOrder, tx);
+
+    // Update sale status
+    await this.saleService.checkSaleStatus(createdOrder.saleId, tx);
+
+    return createdOrder;
   }
 
   public async updateOrder(
     orderId: number,
     data: UpdateOrderDto,
-  ): Promise<Order | null> {
-    let updatedOrder: Order | null = null;
+  ): Promise<Order> {
     try {
-      await this.prisma.$transaction(async (transactionalPrisma) => {
-        const existingOrder = await this.prisma.order.findFirstOrThrow({
+      return await this.prisma.$transaction(async (tx) => {
+        const existingOrder = await tx.order.findFirstOrThrow({
           where: { id: orderId },
         });
 
-        updatedOrder = await transactionalPrisma.order.update({
+        const updatedOrder = await tx.order.update({
           where: { id: orderId },
           data,
         });
 
+        // If there is order quantity chages, then update products stock
         if (data.quantity) {
-          const product = await transactionalPrisma.product.findUniqueOrThrow({
-            where: { id: existingOrder.productId },
-          });
+          // update product stock removing old order
+          await this.productService.removeOrder(existingOrder, tx);
 
-          // Check if there are enough items in inventory
-          const totalStock =
-            product.stock + existingOrder.quantity - data.quantity;
-          if (totalStock < 0) {
-            throw new HttpException(
-              409,
-              `There are not enough '${product.name}' in inventory to complete the update, there are '${product.stock}' registered in inventory`,
-            );
-          }
+          // update product stock adding updated order
+          await this.productService.addOrder(updatedOrder, tx);
 
-          // Revert stock change from the original order
-          await transactionalPrisma.product.update({
-            where: {
-              id: product.id,
-            },
-            data: {
-              stock: {
-                increment: existingOrder.quantity,
-              },
-            },
-          });
-
-          // Apply stock change for the updated order
-          await transactionalPrisma.product.update({
-            where: {
-              id: product.id,
-            },
-            data: {
-              stock: {
-                decrement: updatedOrder.quantity,
-              },
-            },
-          });
+          // Update sale status
+          await this.saleService.checkSaleStatus(existingOrder.saleId, tx);
         }
-        // Update sale status
-        await this.sale.checkSaleStatus(
-          existingOrder.saleId,
-          transactionalPrisma,
-        );
+        return updatedOrder;
       });
-      return updatedOrder;
     } catch (error) {
       throw error;
     } finally {
@@ -126,44 +86,42 @@ export class OrderService {
     }
   }
 
-  public async deleteOrder(orderId: number) {
-    try {
-      await this.prisma.$transaction(async (transactionalPrisma) => {
-        const orderToDelete = await this.prisma.order.findFirstOrThrow({
-          where: { id: orderId },
+  public async deleteOrder(
+    orderId: number,
+    tx?: PrismaTransactionClient | undefined,
+  ): Promise<void> {
+    if (!tx) {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
+          return await this.deleteOrderWithTransaction(orderId, tx);
         });
-
-        const product = await transactionalPrisma.product.findUniqueOrThrow({
-          where: { id: orderToDelete.productId },
-        });
-
-        await transactionalPrisma.order.delete({
-          where: { id: orderToDelete.id },
-        });
-
-        // Update inventory after deleting the order
-        await transactionalPrisma.product.update({
-          where: {
-            id: product.id,
-          },
-          data: {
-            stock: {
-              increment: orderToDelete.quantity,
-            },
-          },
-        });
-
-        // Update sale status
-        await this.sale.checkSaleStatus(
-          orderToDelete.saleId,
-          transactionalPrisma,
-        );
-      });
-      return;
-    } catch (error) {
-      throw error;
-    } finally {
-      await this.prisma.$disconnect();
+      } catch (error) {
+        throw error;
+      } finally {
+        await this.prisma.$disconnect();
+      }
     }
+    return this.deleteOrderWithTransaction(orderId, tx);
+  }
+
+  private async deleteOrderWithTransaction(
+    orderId: number,
+    tx: PrismaTransactionClient,
+  ) {
+    const orderToDelete = await tx.order.findFirstOrThrow({
+      where: { id: orderId },
+    });
+
+    // Update inventory
+    await this.productService.removeOrder(orderToDelete, tx);
+
+    // Update sale status
+    await this.saleService.checkSaleStatus(orderToDelete.saleId, tx);
+
+    await tx.order.delete({
+      where: { id: orderToDelete.id },
+    });
+
+    return;
   }
 }
