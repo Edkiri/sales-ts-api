@@ -14,7 +14,7 @@ describe('orders.service', () => {
   });
 
   describe('createOrder', () => {
-    it('should call createOrderWithTransaction only once when no tx', async () => {
+    it('should call createOrderWithTransaction only once per order', async () => {
       Container.set(SaleService, {
         checkSaleStatus: vi.fn().mockReturnValueOnce(true),
       });
@@ -24,7 +24,6 @@ describe('orders.service', () => {
 
       const ordersService = Container.get(OrderService);
 
-      ordersService.prisma = prismaMock;
       prismaMock.$transaction.mockImplementationOnce((callback) =>
         callback(prismaMock),
       );
@@ -33,15 +32,18 @@ describe('orders.service', () => {
         .fn()
         .mockReturnValueOnce(true);
 
-      await ordersService.createOrder({
-        price: 10,
+      const orderData = {
+        price: 1,
         productId: 1,
         quantity: 1,
         rate: 1,
         saleId: 1,
-      });
+      };
+      await ordersService.createOrder(orderData);
 
-      expect(ordersService.createOrderWithTransaction).toHaveBeenCalledTimes(1);
+      await ordersService.createOrder(orderData);
+
+      expect(ordersService.createOrderWithTransaction).toHaveBeenCalledTimes(2);
     });
   });
 });

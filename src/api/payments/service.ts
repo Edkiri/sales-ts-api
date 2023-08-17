@@ -73,10 +73,11 @@ export class PaymentService {
 
           // Apply accpunt change for the updated Payment
           await this.accountService.addPayment(updatedPayment, tx);
-
-          // Update sale status
-          await this.saleService.checkSaleStatus(existingPayment.saleId, tx);
         }
+
+        // Update sale status
+        await this.saleService.checkSaleStatus(existingPayment.saleId, tx);
+
         return updatedPayment;
       });
     } catch (error) {

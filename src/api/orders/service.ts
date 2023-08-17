@@ -72,10 +72,11 @@ export class OrderService {
 
           // update product stock adding updated order
           await this.productService.addOrder(updatedOrder, tx);
-
-          // Update sale status
-          await this.saleService.checkSaleStatus(existingOrder.saleId, tx);
         }
+
+        // Update sale status
+        await this.saleService.checkSaleStatus(existingOrder.saleId, tx);
+
         return updatedOrder;
       });
     } catch (error) {
