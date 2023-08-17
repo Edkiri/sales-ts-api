@@ -104,7 +104,7 @@ export class OrderService {
     return this.deleteOrderWithTransaction(orderId, tx);
   }
 
-  private async deleteOrderWithTransaction(
+  public async deleteOrderWithTransaction(
     orderId: number,
     tx: PrismaTransactionClient,
   ) {
