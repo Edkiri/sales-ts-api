@@ -8,9 +8,9 @@ import { PrismaTransactionClient } from 'types';
 
 @Service()
 export class OrderService {
-  private prisma = new PrismaClient();
-  private saleService = Container.get(SaleService);
-  private productService = Container.get(ProductService);
+  public prisma = new PrismaClient();
+  public saleService = Container.get(SaleService);
+  public productService = Container.get(ProductService);
 
   public async createOrder(
     orderData: CreateOrderDto,
@@ -27,11 +27,10 @@ export class OrderService {
         await this.prisma.$disconnect();
       }
     }
-
     return this.createOrderWithTransaction(orderData, tx);
   }
 
-  private async createOrderWithTransaction(
+  public async createOrderWithTransaction(
     orderData: CreateOrderDto,
     tx: PrismaTransactionClient,
   ): Promise<Order> {

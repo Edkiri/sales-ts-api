@@ -6,10 +6,10 @@ import { HttpException } from '../../exceptions/httpException';
 
 @Service()
 export class ProductService {
-  public client = new PrismaClient();
+  public prisma = new PrismaClient();
 
   public async createProduct(productData: CreateProductDto) {
-    const createdProductData = await this.client.product.create({
+    const createdProductData = await this.prisma.product.create({
       data: productData,
     });
 
@@ -17,12 +17,12 @@ export class ProductService {
   }
 
   public async findProducts() {
-    const products = await this.client.product.findMany();
+    const products = await this.prisma.product.findMany();
     return products;
   }
 
   public async findProductById(productId: number) {
-    const product = await this.client.product.findFirstOrThrow({
+    const product = await this.prisma.product.findFirstOrThrow({
       where: { id: productId },
     });
     return product;
@@ -30,7 +30,7 @@ export class ProductService {
 
   public async updateProduct(productId: number, data: UpdateProductDto) {
     await this.findProductById(productId);
-    const updatedProduct = await this.client.product.update({
+    const updatedProduct = await this.prisma.product.update({
       where: { id: productId },
       data,
     });
@@ -39,7 +39,7 @@ export class ProductService {
 
   public async deleteProductById(productId: number) {
     await this.findProductById(productId);
-    await this.client.product.delete({ where: { id: productId } });
+    await this.prisma.product.delete({ where: { id: productId } });
     return;
   }
 
@@ -47,7 +47,7 @@ export class ProductService {
     order: Order,
     tx?: PrismaTransactionClient | undefined,
   ) {
-    const prismaClient = tx || this.client;
+    const prismaClient = tx || this.prisma;
 
     const product = await prismaClient.product.findFirstOrThrow({
       where: { id: order.productId },
@@ -77,7 +77,7 @@ export class ProductService {
     order: Order,
     tx?: PrismaTransactionClient | undefined,
   ) {
-    const prismaClient = tx || this.client;
+    const prismaClient = tx || this.prisma;
 
     const product = await prismaClient.product.findFirstOrThrow({
       where: { id: order.productId },
