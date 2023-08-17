@@ -4,8 +4,8 @@ import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { SaleStatus } from '../../enums/sale-status..enum';
 import { isAlmostCero } from '../../utis/functions';
 import { PrismaTransactionClient } from '../../types';
-import { OrderService } from 'api/orders/service';
-import { PaymentService } from 'api/payments/service';
+import { OrderService } from '../orders/service';
+import { PaymentService } from '../payments/service';
 
 @Service()
 export class SaleService {
